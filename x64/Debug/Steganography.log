@@ -1,0 +1,3 @@
+﻿  Steganography.cpp
+C:\Users\MK\source\repos\Steganography\Steganography.cpp(86,32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Steganography.vcxproj -> C:\Users\MK\source\repos\Steganography\x64\Debug\Steganography.exe
