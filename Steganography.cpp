@@ -71,6 +71,26 @@ vector<bool> LSB_deStegno(Mat img) {
     // for (bool i : res) cout << i; cout << '\n';
     return res;
 }
+void Show_lsb_image(Mat img, Mat Img) {
+    Mat_<Vec3b> newLSB = Img.clone(), oldLSB = img.clone();
+    for (auto& pixel : newLSB) {
+        pixel[0] &= 3; pixel[0] *= 62;
+        pixel[1] &= 3; pixel[1] *= 62;
+        pixel[2] &= 3; pixel[2] *= 62;
+    }
+    for (auto& pixel : oldLSB) {
+        pixel[0] &= 3; pixel[0] *= 62;
+        pixel[1] &= 3; pixel[1] *= 62;
+        pixel[2] &= 3; pixel[2] *= 62;
+    }
+    Mat newLSB1, oldLSB1;
+    cvtColor(newLSB, newLSB1, COLOR_RGB2GRAY);
+    cvtColor(oldLSB, oldLSB1, COLOR_RGB2GRAY);
+    imshow(" Only LSB new : ", newLSB1);
+    imshow(" Only LSB old : ", oldLSB1);
+    waitKey(0);
+    return;
+}
 Mat LSB_Stegno(Mat img_org, vector<bool>& Msg) {
     // each pixel can store 2 bits --> 
     // 4 pixels can store one cahracter -->
@@ -82,8 +102,10 @@ Mat LSB_Stegno(Mat img_org, vector<bool>& Msg) {
         cout << "msg is too bit to store in image..\n"; exit(0);
     } 
 
-    Mat img = img_org;
-    int ch_num = Msg.size() / 8, pxct = 0, cols = img.cols, rows = img.rows;
+    Mat img = img_org.clone();
+   
+    //Show_lsb_image(img_org, img);
+    int ch_num = int(Msg.size()) / 8, pxct = 0, cols = img.cols, rows = img.rows;
     for (int ct = 0; ct < 16; ct+=2) {
         bool Bit1 = (ch_num & (1 << ct)), Bit2 = (ch_num & (1 << (ct+1)));
         int c = (pxct / 3) / rows, r = (pxct / 3) % rows, mod = pxct % 3;
@@ -116,11 +138,11 @@ Mat LSB_Stegno(Mat img_org, vector<bool>& Msg) {
     hconcat(img, img_org, res);
     imshow("res : ", res);
     waitKey(0);
+    Show_lsb_image(img_org, img);
     return img;
 }
-int main()
-{
-    // test();
+
+void LSB_Driver() {
     string msg = "", imgAdd, tst, fileAdd;
     cout << "File to read as message : "; cin >> fileAdd;
     ifstream myfile(fileAdd);
@@ -132,12 +154,40 @@ int main()
     // cout << "Message to encrypt in image : "; cin >> msg;
     vector<bool> binaryMsg = ConvertBin(msg);
     // for (bool i : binaryMsg) cout << i; cout << '\n';
-    Mat img; 
+    Mat img;
     cout << "Image adderess (or) image filename : "; cin >> imgAdd;
     img = imread(imgAdd, 1);
     Mat res = LSB_Stegno(img, binaryMsg);
     vector<bool> de = LSB_deStegno(res);
     string ss = Bool_Str(de);
-    cout <<"Decrypted Message : "<< ss << '\n';
+    cout << "Decrypted Message : " << ss << '\n';
+    return;
+}
+void Jsteg_Driver() {
+    string msg = "", imgAdd, tst, fileAdd;
+    cout << "File to read as message : "; cin >> fileAdd;
+    ifstream myfile(fileAdd);
+    if (myfile.is_open()) {
+        while (getline(myfile, tst))
+            msg += tst;
+        myfile.close();
+    }
+    // cout << "Message to encrypt in image : "; cin >> msg;
+    vector<bool> binaryMsg = ConvertBin(msg);
+    // for (bool i : binaryMsg) cout << i; cout << '\n';
+    Mat img;
+    cout << "Image adderess (or) image filename : "; cin >> imgAdd;
+    img = imread(imgAdd, 1);
+    return;
+}
+
+int main()
+{
+    // test();
+    LSB_Driver();
+    /*
+        JSTEG Steganography..
+    */
+    Jsteg_Driver();
     return 0;
 }
